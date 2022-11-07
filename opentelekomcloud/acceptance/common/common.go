@@ -113,3 +113,10 @@ func TestAccVBSBackupShareCheck(t *testing.T) {
 		t.Skip("OS_TO_TENANT_ID must be set for acceptance tests")
 	}
 }
+
+func TestAccPreCheckServiceAvailability(t *testing.T, meta map[string]string) {
+	if env.OS_REGION_NAME == "" {
+		t.Skip("OS_TENANT_NAME or OS_PROJECT_NAME must be set for acceptance tests")
+		fmt.Printf("%s: %s", meta["service"], meta["version"])
+	}
+}

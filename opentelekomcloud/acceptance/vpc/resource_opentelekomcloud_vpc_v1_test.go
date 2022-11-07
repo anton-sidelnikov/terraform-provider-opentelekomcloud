@@ -17,13 +17,21 @@ import (
 
 const resourceVPCName = "opentelekomcloud_vpc_v1.vpc_1"
 
+var testMeta = map[string]string{
+	"service": "vpc",
+	"version": "v1",
+}
+
 func TestAccVpcV1_basic(t *testing.T) {
 	var vpc vpcs.Vpc
 	t.Parallel()
 	quotas.BookOne(t, quotas.Router)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { common.TestAccPreCheck(t) },
+		PreCheck: func() {
+			common.TestAccPreCheck(t)
+			common.TestAccPreCheckServiceAvailability(t, testMeta)
+		},
 		ProviderFactories: common.TestAccProviderFactories,
 		CheckDestroy:      testAccCheckVpcV1Destroy,
 		Steps: []resource.TestStep{
