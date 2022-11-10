@@ -6,11 +6,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/identity/v3/catalog"
 	"github.com/opentelekomcloud/terraform-provider-opentelekomcloud/opentelekomcloud"
 	"github.com/opentelekomcloud/terraform-provider-opentelekomcloud/opentelekomcloud/acceptance/env"
 	"github.com/opentelekomcloud/terraform-provider-opentelekomcloud/opentelekomcloud/common/cfg"
+	"github.com/opentelekomcloud/terraform-provider-opentelekomcloud/opentelekomcloud/common/fmterr"
 )
 
 const (
@@ -114,9 +117,22 @@ func TestAccVBSBackupShareCheck(t *testing.T) {
 	}
 }
 
-func TestAccPreCheckServiceAvailability(t *testing.T, meta map[string]string) {
-	if env.OS_REGION_NAME == "" {
-		t.Skip("OS_TENANT_NAME or OS_PROJECT_NAME must be set for acceptance tests")
-		fmt.Printf("%s: %s", meta["service"], meta["version"])
+func TestAccPreCheckServiceAvailability(t *testing.T, meta map[string]string) diag.Diagnostics {
+	t.Logf("%s: %s", meta["service"], meta["version"])
+	config := TestAccProvider.Meta().(*cfg.Config)
+	client, err := config.RegionIdentityV3Client(env.OS_REGION_NAME)
+	if err != nil {
+		return fmterr.Errorf("clientCreationFail", err)
 	}
+	allPages, err := catalog.List(client).AllPages()
+	if err != nil {
+		return fmterr.Errorf("error fetching service catalog: %s", err)
+	}
+	allServices, err := catalog.ExtractServiceCatalog(allPages)
+	if err != nil {
+		return fmterr.Errorf("error fetching services from catalog: %s", err)
+	}
+	fmt.Printf("%s", allServices)
+	t.Skip("OS_TENANT_NAME or OS_PROJECT_NAME must be set for acceptance tests")
+	return nil
 }
