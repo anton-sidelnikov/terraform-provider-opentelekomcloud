@@ -688,6 +688,13 @@ func (c *Config) IdentityV3Client(_ ...string) (*golangsdk.ServiceClient, error)
 	})
 }
 
+func (c *Config) RegionIdentityV3Client(region string) (*golangsdk.ServiceClient, error) {
+	return openstack.NewIdentityV3(c.HwClient, golangsdk.EndpointOpts{
+		Region:       region,
+		Availability: c.getEndpointType(),
+	})
+}
+
 // IdentityV30Client - provides client is used for use with endpoints with invalid "v3.0" URLs
 func (c *Config) IdentityV30Client() (*golangsdk.ServiceClient, error) {
 	service, err := openstack.NewIdentityV3(c.DomainClient, golangsdk.EndpointOpts{
